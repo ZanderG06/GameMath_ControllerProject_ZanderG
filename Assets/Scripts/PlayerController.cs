@@ -4,7 +4,7 @@ public class PlayerController : MonoBehaviour
 {
     private CharacterController controller;
     private Vector3 velocity;
-    private bool groundedPlayer;
+    public bool groundedPlayer;
     public float speed;
     public float jumpHeight;
     public float gravity;
@@ -20,12 +20,12 @@ public class PlayerController : MonoBehaviour
     {
         groundedPlayer = controller.isGrounded;
 
-        if(groundedPlayer && velocity.y > 0) //Check if player is on the ground
+        if(groundedPlayer) //Check if player is on the ground
         {
             velocity.y = 0;
         }
 
-        Vector3 move = new Vector3(Input.GetAxis("Horizontal"), velocity.y, Input.GetAxis("Vertical")); //Gets player input
+        Vector3 move = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical")); //Gets player input
         if (move != Vector3.zero) //If input detected, move player
         {
             gameObject.transform.forward = move;
@@ -38,5 +38,6 @@ public class PlayerController : MonoBehaviour
 
         velocity.y += gravity * Time.deltaTime;
         controller.Move(move * Time.deltaTime * speed); //Frame independant
+        controller.Move(velocity * Time.deltaTime);
     }
 }
