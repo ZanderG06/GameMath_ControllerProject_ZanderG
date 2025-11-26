@@ -1,14 +1,24 @@
 using UnityEngine;
+using UnityEngine.UIElements;
+using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour
 {
     private CharacterController controller;
     private Vector3 velocity;
+    private float pitch;
+    private float yaw;
     public bool groundedPlayer;
     public float speed;
     public float jumpHeight;
     public float gravity;
+    public float pitchSpeed;
+    public float yawSpeed;
+    public GameObject playerCamera;
+
+
     
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -20,7 +30,7 @@ public class PlayerController : MonoBehaviour
     {
         groundedPlayer = controller.isGrounded;
 
-        if(groundedPlayer) //Check if player is on the ground
+        if (groundedPlayer) //Check if player is on the ground
         {
             velocity.y = 0;
         }
@@ -39,5 +49,12 @@ public class PlayerController : MonoBehaviour
         velocity.y += gravity * Time.deltaTime;
         controller.Move(move * Time.deltaTime * speed); //Frame independant
         controller.Move(velocity * Time.deltaTime);
+
+        //Camera Controller
+        pitch = Input.GetAxis("Mouse Y") * pitchSpeed;
+        yaw = Input.GetAxis("Mouse X") * yawSpeed;
+
+        playerCamera.transform.Rotate(pitch, 0, 0);
+        transform.Rotate(0, yaw, 0);
     }
 }
