@@ -6,8 +6,7 @@ public class PlayerController : MonoBehaviour
 {
     private CharacterController controller;
     private Vector3 velocity;
-    private float pitch;
-    private float yaw;
+    private float pitchAngle = 0f;
     public bool groundedPlayer;
     public float speed;
     public float jumpHeight;
@@ -23,6 +22,7 @@ public class PlayerController : MonoBehaviour
     void Start()
     {
         controller = gameObject.GetComponent<CharacterController>();
+        UnityEngine.Cursor.visible = false;
     }
 
     // Update is called once per frame
@@ -35,10 +35,24 @@ public class PlayerController : MonoBehaviour
             velocity.y = 0;
         }
 
-        Vector3 move = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical")); //Gets player input
+        float horizontal = Input.GetAxis("Horizontal");
+        float vertical = Input.GetAxis("Vertical");
+
+        Vector3 cameraForward = playerCamera.transform.forward;
+        cameraForward.y = 0f;
+        cameraForward.Normalize();
+
+        Vector3 cameraLeftRight = playerCamera.transform.right;
+        cameraLeftRight.y = 0f;
+        cameraLeftRight.Normalize();
+
+        Vector3 move = cameraForward * vertical + cameraLeftRight * horizontal;
+
+        //Vector3 move = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical")); //Gets player input
+        
         if (move != Vector3.zero) //If input detected, move player
         {
-            gameObject.transform.forward = move;
+            //gameObject.transform.forward = move;
         }
 
         if (Input.GetButtonDown("Jump") && groundedPlayer) //Gets jump input and checks if player is already jumping
@@ -47,14 +61,17 @@ public class PlayerController : MonoBehaviour
         }
 
         velocity.y += gravity * Time.deltaTime;
-        controller.Move(move * Time.deltaTime * speed); //Frame independant
+        controller.Move(move * speed * Time.deltaTime); //Frame independant
         controller.Move(velocity * Time.deltaTime);
 
         //Camera Controller
-        pitch = Input.GetAxis("Mouse Y") * pitchSpeed;
-        yaw = Input.GetAxis("Mouse X") * yawSpeed;
+        float mouseY = Input.GetAxis("Mouse Y") * pitchSpeed;
+        float mouseX = Input.GetAxis("Mouse X") * yawSpeed;
 
-        playerCamera.transform.Rotate(pitch, 0, 0);
-        transform.Rotate(0, yaw, 0);
+        pitchAngle -= mouseY;
+        pitchAngle = Mathf.Clamp(pitchAngle, -90f, 90f); //Locks pitch rotation
+
+        playerCamera.transform.localRotation = Quaternion.Euler(pitchAngle, 0, 0);
+        transform.Rotate(Vector3.up * mouseX);
     }
 }
