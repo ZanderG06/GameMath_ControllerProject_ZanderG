@@ -1,6 +1,4 @@
 using UnityEngine;
-using UnityEngine.UIElements;
-using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour
 {
@@ -8,21 +6,30 @@ public class PlayerController : MonoBehaviour
     private Vector3 velocity;
     private float pitchAngle = 0f;
     public bool groundedPlayer;
+    public bool isCrouch;
     public float speed;
     public float jumpHeight;
     public float gravity;
     public float pitchSpeed;
     public float yawSpeed;
+    public float speedSprint;
+    public float normalSpeed;
+    public float crouchSpeed;
+    public float cameraOffset;
     public GameObject playerCamera;
+    private Vector3 currentCamera;
+    private Vector3 crouchCamera;
 
 
-    
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         controller = gameObject.GetComponent<CharacterController>();
         UnityEngine.Cursor.visible = false;
+
+        currentCamera = playerCamera.transform.localPosition;
+        crouchCamera = currentCamera + new Vector3(0, cameraOffset, 0);
     }
 
     // Update is called once per frame
@@ -60,6 +67,29 @@ public class PlayerController : MonoBehaviour
             velocity.y += Mathf.Sqrt(jumpHeight * -2f * gravity); //Sqrt square roots jumpHeight * -2f * gravity
         }
 
+        
+
+        //Sprinting & Crouching
+        if (Input.GetKey(KeyCode.LeftControl))
+        {
+            speed = crouchSpeed;
+            isCrouch = true;
+            playerCamera.transform.localPosition = Vector3.Lerp(playerCamera.transform.localPosition, crouchCamera, 1);
+        }
+        else if (Input.GetKey(KeyCode.LeftShift) && !isCrouch) 
+        {
+            speed = speedSprint;
+            playerCamera.transform.localPosition = Vector3.Lerp(playerCamera.transform.localPosition, currentCamera, 1);
+        }
+        else
+        {
+            speed = normalSpeed; //revert speed back to normal
+            isCrouch = false;
+            playerCamera.transform.localPosition = Vector3.Lerp(playerCamera.transform.localPosition, currentCamera, 1);
+        }
+
+        
+
         velocity.y += gravity * Time.deltaTime;
         controller.Move(move * speed * Time.deltaTime); //Frame independant
         controller.Move(velocity * Time.deltaTime);
@@ -73,5 +103,7 @@ public class PlayerController : MonoBehaviour
 
         playerCamera.transform.localRotation = Quaternion.Euler(pitchAngle, 0, 0);
         transform.Rotate(Vector3.up * mouseX);
+
+        
     }
 }
